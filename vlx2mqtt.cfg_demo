@@ -2,6 +2,8 @@
 [mqtt]
 host = 127.0.0.1
 port = 1883
+login = broker
+password = 5p3r53cr3t
 
 # topic for status messages
 statustopic = vlx2mqtt/status
