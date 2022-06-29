@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  vlx2mqtt:
+    build: .
+    image: python:buster
+    command: python vlx2mqtt.py vlx2mqtt.cfg
+    working_dir: /app
+    volumes:
+      - ./:/app
+    networks:
+      - my-net
+
+networks:
+  my-net:
+    driver: bridge
