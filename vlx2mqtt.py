@@ -136,7 +136,7 @@ async def vlx_cb(node):
     if not mqttConn:
         return
     logging.debug(("%s at %d%%") % (node.name, node.position.position_percent))
-    mqttc.publish(node.name, node.position.position_percent, retain=False)
+    mqttc.publish(ROOTTOPIC + '/' + node.name, node.position.position_percent, retain=False)
 
 async def main(loop):
     global running
