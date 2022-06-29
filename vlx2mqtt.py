@@ -28,6 +28,7 @@ MQTT_HOST = config.get("mqtt", "host")
 MQTT_PORT = config.getint("mqtt", "port")
 MQTT_USER = config.get("mqtt", "login")
 MQTT_PW = config.get("mqtt", "password")
+ROOTTOPIC = config.get("mqtt", "roottopic")
 STATUSTOPIC = config.get("mqtt", "statustopic")
 # [velux]
 VLX_HOST = config.get("velux", "host")
@@ -63,8 +64,8 @@ PYVLXLOG.addHandler(ch)
 # MQTT
 MQTT_CLIENT_ID = APPNAME + "_%d" % os.getpid()
 mqttc = mqtt.Client(MQTT_CLIENT_ID)
-if (MQTT_USER is not None and MQTT_PW is not None):
-    mqttc.username_pw_set(MQTT_USER, MQTT_PW)
+#if (MQTT_USER is not None and MQTT_PW is not None):
+mqttc.username_pw_set(MQTT_USER, MQTT_PW)
 
 # 0: Connection successful 
 # 1: Connection refused - incorrect protocol version
@@ -83,8 +84,8 @@ def mqtt_on_connect(client, userdata, flags, return_code):
         #register devices
         for node in pyvlx.nodes:
             if isinstance(node, OpeningDevice):
-                logging.debug(("Subscribing to %s") % (node.name + '/set'))
-                mqttc.subscribe(node.name + '/set')
+                logging.debug(("Subscribing to %s") % (ROOTTOPIC + '/' + node.name + '/set'))
+                mqttc.subscribe(ROOTTOPIC + '/' +  node.name + '/set')
         mqttConn = True
     elif return_code == 1:
         logging.info("Connection refused - unacceptable protocol version")
