@@ -182,7 +182,7 @@ async def main(loop):
         await asyncio.sleep(1)
 
         #see if we received some mqtt commands
-        for name, value in nodes.items():
+        for name, value in list(nodes.items()):
             if value >= 0:
                 nodes[name] = -1        #mark execuded
                 await pyvlx.nodes[name].set_position(Position(position_percent=value))
