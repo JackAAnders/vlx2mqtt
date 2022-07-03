@@ -6,7 +6,9 @@ login = usrname
 password = 5up3r53cr3t
 
 # topic for status messages
-statustopic = vlx2mqtt/status
+roottopic = vlx2mqtt
+statustopic = ${roottopic}/status
+
 
 # KLF200 related config
 [velux]
