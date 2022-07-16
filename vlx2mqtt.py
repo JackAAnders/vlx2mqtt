@@ -54,13 +54,15 @@ nodes = {}
 LOGFORMAT = '%(asctime)-15s %(message)s'
 if VERBOSE:
     logging.basicConfig(
-        filename=LOGFILE,
+        stream=sys.stdout,
+        # ilename=LOGFILE,
         format=LOGFORMAT,
         level=logging.DEBUG
     )
 else:
     logging.basicConfig(
-        filename=LOGFILE,
+        stream=sys.stdout,
+        # filename=LOGFILE,
         format=LOGFORMAT,
         level=logging.INFO
     )
@@ -206,6 +208,8 @@ async def main(loop):
         if isinstance(node, OpeningDevice):
             node.register_device_updated_cb(vlx_cb)
             logging.debug("watching: %s", node.name)
+        else:
+            logging.debug("   Other node type: %s", type(node))
 
     while RUNNING:
         await asyncio.sleep(1)
@@ -235,8 +239,7 @@ signal.signal(signal.SIGINT, cleanup)
 
 if __name__ == '__main__':
     # pylint: disable=invalid-name
-    LOOP = asyncio.new_event_loop()
-    asyncio.set_event_loop(LOOP)
+    LOOP = asyncio.get_event_loop()
 
     pid = str(os.getpid())
     pidfile = "/tmp/vlx.pid"
