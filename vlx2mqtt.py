@@ -130,6 +130,7 @@ def mqtt_on_connect(client, userdata, flags, return_code):
 
 
 def mqtt_on_disconnect(mosq, obj, return_code):
+    """ on disconnect """
     global MQTT_CONN
     MQTT_CONN = False
     if return_code == 0:
@@ -141,6 +142,7 @@ def mqtt_on_disconnect(mosq, obj, return_code):
 
 
 def mqtt_on_message(client, userdata, msg):
+    """ on message """
     # set OpeningDevice?
     for node in pyvlx.nodes:
         if node.name+'/set' not in msg.topic:
@@ -150,6 +152,7 @@ def mqtt_on_message(client, userdata, msg):
 
 
 def cleanup(signum=signal.SIGTERM, frame=None):
+    """ cleanup """
     global RUNNING
     RUNNING = False
     logging.info("Exiting on signal %d", signum)
@@ -157,6 +160,7 @@ def cleanup(signum=signal.SIGTERM, frame=None):
 
 # note: only subclasses of OpeningDevice get registered
 async def vlx_cb(node):
+    """ vlx call back function """
     global MQTT_CONN
     if not MQTT_CONN:
         return
@@ -169,6 +173,7 @@ async def vlx_cb(node):
 
 
 async def main(loop):
+    """ async main loop """
     global RUNNING
     global pyvlx, MQTTC
     logging.debug("klf200      : %s", VLX_HOST)
@@ -237,7 +242,21 @@ async def main(loop):
 signal.signal(signal.SIGTERM, cleanup)
 signal.signal(signal.SIGINT, cleanup)
 
+def _set_event_loop(self):
+    """ compatibility to > v3.10 """
+    if sys.version_info.major == 3 and sys.version_info.minor < 10:
+        # less than 3.10.0
+        self.io_loop = asyncio.get_event_loop()
+    else:
+        # equal or greater than 3.10.0
+        try:
+            self.io_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self.io_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.io_loop)
+
 if __name__ == '__main__':
+    """" main, what else ;) """
     # pylint: disable=invalid-name
     LOOP = asyncio._set_event_loop()
 
