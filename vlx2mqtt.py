@@ -239,7 +239,7 @@ signal.signal(signal.SIGINT, cleanup)
 
 if __name__ == '__main__':
     # pylint: disable=invalid-name
-    LOOP = asyncio.get_event_loop()
+    LOOP = asyncio._set_event_loop()
 
     pid = str(os.getpid())
     pidfile = "/tmp/vlx.pid"
