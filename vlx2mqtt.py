@@ -96,7 +96,9 @@ def mqtt_on_connect(client, userdata, flags, return_code):
         5: Connection refused - not authorised
         6-255: Currently unused.
     '''
-    global MQTT_CONN
+    _ = (client, userdata, flags)  # pylint: disable=unused-argument
+
+    global MQTT_CONN  # pylint: disable=global-statement
     logging.debug("mqtt_on_connect return_code: %s", str(return_code))
     if return_code == 0:
         logging.info("Connected to %s:%s", MQTT_HOST, MQTT_PORT)
@@ -131,7 +133,8 @@ def mqtt_on_connect(client, userdata, flags, return_code):
 
 def mqtt_on_disconnect(mosq, obj, return_code):
     """ on disconnect """
-    global MQTT_CONN
+    _ = (mosq, obj)  # pylint: disable=unused-argument
+    global MQTT_CONN  # pylint: disable=global-statement
     MQTT_CONN = False
     if return_code == 0:
         logging.info("Clean disconnection")
@@ -143,6 +146,8 @@ def mqtt_on_disconnect(mosq, obj, return_code):
 
 def mqtt_on_message(client, userdata, msg):
     """ on message """
+    _ = (client, userdata)  # pylint: disable=unused-argument
+
     # set OpeningDevice?
     for node in pyvlx.nodes:
         if node.name+'/set' not in msg.topic:
@@ -153,7 +158,8 @@ def mqtt_on_message(client, userdata, msg):
 
 def cleanup(signum=signal.SIGTERM, frame=None):
     """ cleanup """
-    global RUNNING
+    _ = (frame)  # pylint: disable=unused-argument
+    global RUNNING  # pylint: disable=global-statement
     RUNNING = False
     logging.info("Exiting on signal %d", signum)
 
@@ -161,7 +167,7 @@ def cleanup(signum=signal.SIGTERM, frame=None):
 # note: only subclasses of OpeningDevice get registered
 async def vlx_cb(node):
     """ vlx call back function """
-    global MQTT_CONN
+    global MQTT_CONN  # pylint: disable=global-statement,global-variable-not-assigned
     if not MQTT_CONN:
         return
     logging.debug("%s at %d%%", node.name, node.position.position_percent)
@@ -174,8 +180,8 @@ async def vlx_cb(node):
 
 async def main(loop):
     """ async main loop """
-    global RUNNING
-    global pyvlx, MQTTC
+    global RUNNING  # pylint: disable=global-statement,global-variable-not-assigned
+    global pyvlx, MQTTC  # pylint: disable=global-statement
     logging.debug("klf200      : %s", VLX_HOST)
     logging.debug("MQTT broker : %s", MQTT_HOST)
     logging.debug("  port      : %s", str(MQTT_PORT))
@@ -242,39 +248,24 @@ async def main(loop):
 signal.signal(signal.SIGTERM, cleanup)
 signal.signal(signal.SIGINT, cleanup)
 
-def _set_event_loop(self):
-    """ compatibility to > v3.10 """
+
+if __name__ == '__main__':
+    # pylint: disable=invalid-name
     if sys.version_info.major == 3 and sys.version_info.minor < 10:
         # less than 3.10.0
-        self.io_loop = asyncio.get_event_loop()
+        io_loop = asyncio.get_event_loop()
     else:
         # equal or greater than 3.10.0
         try:
-            self.io_loop = asyncio.get_running_loop()
+            io_loop = asyncio.get_running_loop()
         except RuntimeError:
-            self.io_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.io_loop)
-
-if __name__ == '__main__':
-    """" main, what else ;) """
-    # pylint: disable=invalid-name
-    LOOP = asyncio._set_event_loop()
-
-    pid = str(os.getpid())
-    pidfile = "/tmp/vlx.pid"
-
-    if os.path.isfile(pidfile):
-        print("%s already exists, exiting" % pidfile)
-        sys.exit()
-    file = open(pidfile, 'w')
-    file.write(pid)
-    file.close()
+            io_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(io_loop)
 
     try:
-        LOOP.run_until_complete(main(LOOP))
+        io_loop.run_until_complete(main(io_loop))
     except KeyboardInterrupt:
         logging.info("Interrupted by keypress")
-    finally:
-        os.unlink(pidfile)
-    LOOP.close()
+
+    io_loop.close()
     sys.exit(0)
